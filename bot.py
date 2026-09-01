@@ -2,26 +2,17 @@ import os
 import threading
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
-import requests
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
 
 TOKEN = os.getenv("BOT_TOKEN")
-
-PAIRS = [
-    "EUR/USD", "GBP/USD", "USD/JPY", "USD/CHF",
-    "AUD/USD", "USD/CAD", "NZD/USD", "EUR/GBP",
-    "EUR/JPY", "GBP/JPY", "AUD/JPY", "CHF/JPY"
-]
-
-TIMEFRAMES = ["1m", "3m", "5m", "15m", "30m"]
 
 
 class HealthHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
         self.end_headers()
-        self.wfile.write(b"Multi Currency Signal Bot is running")
+        self.wfile.write(b"Bot is running")
 
     def log_message(self, format, *args):
         pass
@@ -43,16 +34,26 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def pairs(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    pairs = [
+        "EUR/USD", "GBP/USD", "USD/JPY", "USD/CHF",
+        "AUD/USD", "USD/CAD", "NZD/USD", "EUR/GBP",
+        "EUR/JPY", "GBP/JPY", "AUD/JPY", "CHF/JPY"
+    ]
+
     await update.message.reply_text(
-        "💱 Walýuta jübütleri:\n\n"
-        + "\n".join(f"• {pair}" for pair in PAIRS)
+        "💱 Walýuta jübütleri:\n\n" +
+        "\n".join(f"• {pair}" for pair in pairs)
     )
 
 
 async def timeframes(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         "⏱️ Timeframe-lar:\n\n"
-        + "\n".join(f"• {tf}" for tf in TIMEFRAMES)
+        "• 1m\n"
+        "• 3m\n"
+        "• 5m\n"
+        "• 15m\n"
+        "• 30m"
     )
 
 
@@ -68,9 +69,7 @@ async def signal(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "ATR ✅\n"
         "Support/Resistance ✅\n"
         "Candlestick ✅\n\n"
-        "⏱️ Timeframe: 1m / 3m / 5m / 15m / 30m\n"
-        "💱 Köp walýuta jübütleri\n\n"
-        "⚠️ Hakyky BUY/SELL üçin live market data API birikdirilmeli."
+        "⚠️ Live market data birikdirilenden soň hakyky BUY/SELL signal işlär."
     )
 
 
@@ -78,7 +77,10 @@ def main():
     if not TOKEN:
         raise ValueError("BOT_TOKEN tapylmady")
 
-    threading.Thread(target=run_web_server, daemon=True).start()
+    threading.Thread(
+        target=run_web_server,
+        daemon=True
+    ).start()
 
     app = Application.builder().token(TOKEN).build()
 
