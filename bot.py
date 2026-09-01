@@ -1,6 +1,5 @@
 import os
 import logging
-import requests
 from datetime import datetime
 
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
@@ -11,29 +10,24 @@ from telegram.ext import (
     ContextTypes,
 )
 
-logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    level=logging.INFO,
-)
+logging.basicConfig(level=logging.INFO)
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 
-# Free demo endpoint for market data.
-# Do not treat this as Pocket Option OTC data.
-API_URL = "https://api.frankfurter.app"
-
-PAIRS = {
-    "EUR/USD": ("EUR", "USD"),
-    "GBP/USD": ("GBP", "USD"),
-    "USD/JPY": ("USD", "JPY"),
-    "USD/CHF": ("USD", "CHF"),
-    "AUD/USD": ("AUD", "USD"),
-    "EUR/GBP": ("EUR", "GBP"),
-    "EUR/JPY": ("EUR", "JPY"),
-    "AUD/CAD": ("AUD", "CAD"),
-    "AUD/CHF": ("AUD", "CHF"),
-    "USD/CAD": ("USD", "CAD"),
-}
+PAIRS = [
+    "EUR/USD OTC",
+    "GBP/USD OTC",
+    "USD/JPY OTC",
+    "USD/CHF OTC",
+    "AUD/USD OTC",
+    "EUR/GBP OTC",
+    "EUR/JPY OTC",
+    "AUD/CAD OTC",
+    "AUD/CHF OTC",
+    "USD/CAD OTC",
+    "NZD/JPY OTC",
+    "EUR/NZD OTC",
+]
 
 TIMEFRAMES = {
     "30s": "30 SEC",
@@ -43,27 +37,23 @@ TIMEFRAMES = {
 }
 
 
-def main_menu():
+def menu():
     keyboard = [
         [
-            InlineKeyboardButton("💱 EUR/USD", callback_data="pair|EUR/USD"),
-            InlineKeyboardButton("💱 GBP/USD", callback_data="pair|GBP/USD"),
+            InlineKeyboardButton("💱 EUR/USD OTC", callback_data="pair|EUR/USD OTC"),
+            InlineKeyboardButton("💱 GBP/USD OTC", callback_data="pair|GBP/USD OTC"),
         ],
         [
-            InlineKeyboardButton("💱 USD/JPY", callback_data="pair|USD/JPY"),
-            InlineKeyboardButton("💱 USD/CHF", callback_data="pair|USD/CHF"),
+            InlineKeyboardButton("💱 USD/JPY OTC", callback_data="pair|USD/JPY OTC"),
+            InlineKeyboardButton("💱 USD/CHF OTC", callback_data="pair|USD/CHF OTC"),
         ],
         [
-            InlineKeyboardButton("💱 AUD/USD", callback_data="pair|AUD/USD"),
-            InlineKeyboardButton("💱 EUR/GBP", callback_data="pair|EUR/GBP"),
+            InlineKeyboardButton("💱 AUD/USD OTC", callback_data="pair|AUD/USD OTC"),
+            InlineKeyboardButton("💱 EUR/JPY OTC", callback_data="pair|EUR/JPY OTC"),
         ],
         [
-            InlineKeyboardButton("💱 EUR/JPY", callback_data="pair|EUR/JPY"),
-            InlineKeyboardButton("💱 AUD/CAD", callback_data="pair|AUD/CAD"),
-        ],
-        [
-            InlineKeyboardButton("💱 AUD/CHF", callback_data="pair|AUD/CHF"),
-            InlineKeyboardButton("💱 USD/CAD", callback_data="pair|USD/CAD"),
+            InlineKeyboardButton("💱 AUD/CAD OTC", callback_data="pair|AUD/CAD OTC"),
+            InlineKeyboardButton("💱 AUD/CHF OTC", callback_data="pair|AUD/CHF OTC"),
         ],
         [
             InlineKeyboardButton("⏱ 30 SEC", callback_data="tf|30s"),
@@ -73,61 +63,41 @@ def main_menu():
             InlineKeyboardButton("⏱ 5 MIN", callback_data="tf|5m"),
             InlineKeyboardButton("⏱ 15 MIN", callback_data="tf|15m"),
         ],
+        [
+            InlineKeyboardButton("📊 SIGNAL", callback_data="signal"),
+        ],
     ]
 
     return InlineKeyboardMarkup(keyboard)
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    context.user_data["pair"] = "EUR/USD"
+    context.user_data["pair"] = "AUD/USD OTC"
     context.user_data["timeframe"] = "1m"
 
     await update.message.reply_text(
-        "📊 MULTI CURRENCY SIGNAL BOT\n\n"
-        "💱 Jübüt saýlaň\n"
-        "⏱ Timeframe saýlaň\n\n"
-        "⚠️ Maglumat ýok bolsa signal berilmez.",
-        reply_markup=main_menu(),
+        "📊 OTC SIGNAL BOT\n\n"
+        "💱 Walýuta jübüdini saýla\n"
+        "⏱ Timeframe saýla\n\n"
+        "Soň 📊 SIGNAL bas.",
+        reply_markup=menu(),
     )
 
 
 async def signal(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    pair = context.user_data.get("pair", "EUR/USD")
+    pair = context.user_data.get("pair", "AUD/USD OTC")
     timeframe = context.user_data.get("timeframe", "1m")
 
-    await send_analysis(
-        update,
-        pair,
-        timeframe,
-    )
-
-
-async def send_analysis(update, pair, timeframe):
-    timeframe_name = TIMEFRAMES.get(timeframe, "1 MIN")
-
-    text = (
-        f"📊 ANALIZ\n\n"
+    await update.message.reply_text(
+        f"📊 OTC SIGNAL\n\n"
         f"💱 {pair}\n"
-        f"⏱ {timeframe_name}\n\n"
-        f"🔎 RSI\n"
-        f"🔎 MACD\n"
-        f"🔎 EMA 9/21\n"
-        f"🔎 SMA\n"
-        f"🔎 Bollinger Bands\n"
-        f"🔎 Stochastic\n"
-        f"🔎 ATR\n\n"
-        f"⏳ Hakyky maglumat çeşmesi barlanýar...\n\n"
-        f"⚠️ Bu wersiýa Pocket Option OTC feed-i däl.\n"
-        f"⚠️ OTC diýip galp signal berilmeýär."
+        f"⏱ {TIMEFRAMES[timeframe]}\n\n"
+        f"⏳ Hakyky OTC maglumat garaşylýar...\n\n"
+        f"⚠️ Maglumat ýok wagty CALL/PUT döredilmeýär."
     )
 
-    if update.callback_query:
-        await update.callback_query.message.reply_text(text)
-    else:
-        await update.message.reply_text(text)
 
-
-async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
 
@@ -138,37 +108,33 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data["pair"] = pair
 
         await query.message.reply_text(
-            f"✅ Jübüt saýlandy: {pair}\n\n"
-            f"Indi timeframe saýlaň:",
-            reply_markup=main_menu(),
+            f"✅ {pair}\n\n"
+            f"⏱ Timeframe saýla:",
+            reply_markup=menu(),
         )
 
     elif data.startswith("tf|"):
-        timeframe = data.split("|", 1)[1]
-        context.user_data["timeframe"] = timeframe
-
-        pair = context.user_data.get("pair", "EUR/USD")
+        tf = data.split("|", 1)[1]
+        context.user_data["timeframe"] = tf
 
         await query.message.reply_text(
+            f"💱 {context.user_data.get('pair', 'AUD/USD OTC')}\n"
+            f"⏱ {TIMEFRAMES[tf]}\n\n"
+            f"📊 Indi SIGNAL bas.",
+            reply_markup=menu(),
+        )
+
+    elif data == "signal":
+        pair = context.user_data.get("pair", "AUD/USD OTC")
+        tf = context.user_data.get("timeframe", "1m")
+
+        await query.message.reply_text(
+            f"📊 OTC SIGNAL\n\n"
             f"💱 {pair}\n"
-            f"⏱ {TIMEFRAMES[timeframe]}\n\n"
-            f"📊 Analiz taýýarlanýar..."
+            f"⏱ {TIMEFRAMES[tf]}\n\n"
+            f"⏳ Hakyky signal maglumat garaşylýar...\n\n"
+            f"⚠️ Hakyky maglumat bolmasa signal berilmeýär."
         )
-
-        await send_analysis(
-            update,
-            pair,
-            timeframe,
-        )
-
-
-async def status(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
-        "🟢 Bot işleýär.\n\n"
-        "📊 Multi Currency Signal Bot\n"
-        "💱 Currency analysis\n"
-        "⏱ 30 SEC / 1 MIN / 5 MIN / 15 MIN"
-    )
 
 
 def main():
@@ -179,10 +145,9 @@ def main():
 
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("signal", signal))
-    app.add_handler(CommandHandler("status", status))
-    app.add_handler(CallbackQueryHandler(button_handler))
+    app.add_handler(CallbackQueryHandler(buttons))
 
-    print("Signal bot started...")
+    print("OTC Signal Bot started")
 
     app.run_polling()
 
