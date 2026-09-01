@@ -2,6 +2,7 @@ import os
 import threading
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
+import requests
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
 
@@ -20,7 +21,7 @@ class HealthHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
         self.end_headers()
-        self.wfile.write(b"Bot is running")
+        self.wfile.write(b"Multi Currency Signal Bot is running")
 
     def log_message(self, format, *args):
         pass
@@ -57,7 +58,7 @@ async def timeframes(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def signal(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "📊 Signal ulgamy:\n\n"
+        "📊 Signal analiz ulgamy\n\n"
         "EMA ✅\n"
         "RSI ✅\n"
         "MACD ✅\n"
@@ -66,8 +67,10 @@ async def signal(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "Stochastic ✅\n"
         "ATR ✅\n"
         "Support/Resistance ✅\n"
-        "Candlestick analysis ✅\n\n"
-        "⚠️ Hakyky signal maglumat çeşmesi birikdirilenden soň işlär."
+        "Candlestick ✅\n\n"
+        "⏱️ Timeframe: 1m / 3m / 5m / 15m / 30m\n"
+        "💱 Köp walýuta jübütleri\n\n"
+        "⚠️ Hakyky BUY/SELL üçin live market data API birikdirilmeli."
     )
 
 
